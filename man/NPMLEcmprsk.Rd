@@ -1,41 +1,80 @@
 \name{NPMLEcmprsk}
+\Rdversion{1.1}
 \alias{NPMLEcmprsk}
-\title{Non-parametric Maximum-Likelihood Estimation for Competing-Risks Data}
+\docType{package}
+\title{Type-specific Failure Rate and Hazard Rate on Competing Risks Data}
 \description{
-             The function computes non-parametric Maximum-Likelihood Estimate and its asymptotic variance 
-             in a semiparametric mixture model for competing-risks data, as described in Chang et al. (2007b).
+             Given a failure type, the function computes covariate-specific probability of failure 
+             over time and covariate-specific conditional hazard rate based on possibly right-censored
+             competing risk data. Specifically, it computes the non parametric maximum likelihood
+             estimates of these quantities and their asymptotic variances in a semi parametric mixture
+             model for competing risks data, as described in Chang et al. (2007a).
              }
-\usage{NPMLEcmprsk(DATA, C, iteration)}
+\usage{
+       NPMLEcmprsk(DATA,censoring.coding=0,alpha.stable.parameter=100, 
+       beta.stable.parameter=100,initial.alpha=0,initial.beta=0, 
+       threshold=0,iteration=5000)
+       }
 \arguments{
   \item{DATA}{
-              The N-by-P matrix of data. There are N samples rows in matrix, with one sample in each 
-              row. The P columns included the observable times which are time-to-event or censoring times, 
-              the status which are coded by the non-negative number for each observable times, and the P-2 
-              covariates. Note that the censoring status are coded by zero.
+              An N-by-P matrix of data. Each of the N rows in the data matrix stores the data for one subject.
+              Each of the P columns stores one variable. The first column stores the observation time, which is
+              the minimum of time-to-failure and censoring time of a subject; the second column stores the observation
+              time status, which indicates whether the observation time is a censoring time or not and the failure
+              type of the subject when it is not a censoring time and is coded by an non-negative number for each
+              observable time. The remaining columns store P-2 covariate values. The censoring status is coded zero.
               }
-  \item{C}{
-           The parameter influence the convergence of the algorithm. The larger value suggests the faster 
-           convergence. Default value is 50.
-           }
-           
+  \item{censoring.coding}{
+                          The code represents the censoring status. Default value is zero.
+                          }
+  \item{alpha.stable.parameter,beta.stable.parameter}{
+                                                     These parameters influence the convergence rate of the algorithm. More specifically, the parameter
+                                                     determines the difference between the approximations of estimator in the algorithm; from the proposition
+                                                     in Chang, et al. (2007a), the smaller parameter suggests the larger range between the approximations of
+                                                     estimator. In our experiments, more covariates and more failure types usually have to provide larger stable
+                                                     parameter for the convergence. Default value is 100.
+                                                     }
+  \item{initial.alpha,initial.beta}{
+                                     The initial values of iterations in the algorithm. Default value is zero.
+                                     }
+  \item{threshold}{
+                   The threshold for convergence in the algorithm. Default value is zero.
+                   }
   \item{iteration}{
-                   The number of iteration for the algorithm. Default value is 300.
+                   The number of iterations in the algorithm. Default value is 5,000.
                    }
 }
 \details{
-         Fits the semiparametric mixture model for competing-risks data, in which proportional hazards models 
-         are specified for failure time models conditional on cause and a multinomial model is specified for 
-         marginal distribution of cause conditional on covariates, described in Chang, I. S. et al. (2007b).
-         The efficient algorithms for the computation of the non-parametric Maximum-Likelihood Estimation are 
-         described in Change, I. S. et al. (2007a).
+         This function fits the semi-parametric mixture model for competing-risks data, in which proportional hazards models
+         allowing covariates are specified for failure time models conditional on failure type and a multinomial model is specified
+         for marginal distribution of failure type conditional on covariates, described in Chang et al. (2007a). This is a flexible
+         model for competing risk data; in particular, it does not require the independence between covariates and censoring time.
+         The algorithm is efficient for the computation of the non-parametric maximum likelihood estimates; it is also discussed in
+         Chang et al. (2007b).
          }
 \value{
        Returns a list with components
-       \item{Lambda}{The cumulative hazard function. The format is a n-by-k matrix, where n is the number of 
-                     event times and k is the type of status.}
-       \item{alpha}{The coefficients on the probability of risk-sepcific failures, defined by a logistic model. 
-                    The format is a (p-1)-by-(k-1) matrix, where p-1=(p-2)+1, the p-2 covariates and a constant.}
-       \item{beta}{The coefficients on the survival function for time-to-event. The format is a (p-2)-by-k) matrix.}
+       \item{coef.alpha}{
+                         The coefficient on the probability of type-specific failures, defined by a logistic model, and it's a (P-1)-by-(K-1)
+                         matrix, where K denote the number of failure types.
+                         }
+       \item{coef.alpha.se}{
+                            The standard error for alpha.
+                            }
+       \item{coef.alpha.95.lower.CI,coef.alpha.95.upper.CI}{
+                                                            The 95\% confidence interval for alpha.
+                                                            }
+       \item{coef.beta}{
+                        The relative risk coefficients in the hazard function for each type-specific time-to-failure and it's a (P-2)-by-K matrix.
+                        }
+       \item{coef.beta.se}{
+                           The standard error for beta.
+                           }
+       \item{coef.beta.95.lower.CI,coef.beta.95.upper.CI}{
+                                                          The 95\% confidence interval for beta.
+                                                          }
+       
+       We will demonstrate a simulation study in the Examples section, in which included the plot of the probability of type-specific failures.
        }
 \references{
             Chang, I. S. et al. (2007a) A fast algorithm for the nonparameteric maximum likelihood estimate in the Cox-gene model. Statist. Sinica 17, 841-856.\cr
@@ -44,7 +83,7 @@
 \author{Chung-Hsing Chen <chchen@nhri.org.tw>}
 
 \note{
-      The missing value (NA) in the DATA is not allowed in this version.
+      The missing value (e.g. NA) in the DATA is not allowed in this version.
       }
 
 \seealso{
@@ -54,33 +93,46 @@
 \examples{
 \dontrun{
 # setting the seed
-set.seed(1000)
-                   
+set.seed(1)
+
 # setting the sample size
-N=300
-                   
+N<-500
+
 # setting the real parameters
-alpha=c(-2,5)
-beta=c(0.5,-0.5)
-Lambda=1/c(4,5)
-Z=runif(N)
-censoring.time=rexp(N,1/(50*(1-Z)))
-                   
+alpha<-c(-2,5)
+beta<-c(0.5,-0.5)
+Lambda<-1/c(4,5)
+Z<-rnorm(N,0,1)
+
 # generating the data
-W=c((exp(cbind(1,Z) %*% alpha)/(1+exp(cbind(1,Z) %*% alpha))<runif(N))+1)
-T=-log(matrix(runif(2*N),2,N))/Lambda*exp(-t(cbind(1,Z))*beta)
-survival.time=sapply(1:N,function(i) T[W[i],i])
-                   
-temp=survival.time<=censoring.time
-X=sapply(1:N,function(i) if(temp[i]) survival.time[i] else censoring.time[i])
-delta=sapply(1:N,function(i) if(temp[i]) W[i] else 0)
-                   
+W<-c((exp(cbind(1,Z) %*% alpha)/(1+exp(cbind(1,Z) %*% alpha))<runif(N))+1)
+T<--log(matrix(runif(2*N),2,N))/Lambda*exp(-t(cbind(1,Z))*beta)
+survival.time<-sapply(1:N,function(i) T[W[i],i])
+
+censoring.time<-runif(N,0.1,10)
+
+temp<-survival.time<=censoring.time
+X<-sapply(1:N,function(i) if(temp[i]) survival.time[i] else censoring.time[i])
+delta<-sapply(1:N,function(i) if(temp[i]) W[i] else 0)
+
 # estimating the parameters
-data=cbind(X,delta,Z)
-result=NP_competingRisk(data,0,300)
-                   
-result$alpha
-result$beta
+data<-cbind(X,delta,Z)
+result<-NPMLEcmprsk(data)
+result
+
+# plot probability of type-specific failures
+logistic<-function(coef.alpha,covariates)
+exp(cbind(1,covariates) %*% coef.alpha)/(1+exp(cbind(1,covariates) %*% coef.alpha))
+
+range<-seq(min(Z),max(Z),0.1)
+
+plot(range,logistic(result$coef.alpha,range),type="l"
+,xlab="covariate",ylab="Case fatality rate")
+lines(range,logistic(result$coef.alpha.95.lower.CI,range),lty=2)
+lines(range,logistic(result$coef.alpha.95.upper.CI,range),lty=2)
+
+points(Z,logistic(result$coef.alpha,Z),cex=0.7)
 }
 }
+
 

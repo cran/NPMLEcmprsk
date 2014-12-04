@@ -1,7 +1,4 @@
-b6381515022829e121b31e6fb2aa5653 *DESCRIPTION
-8b54e5a89fbda3af5e077053d40bec76 *NAMESPACE
-a156c78c7dddb5939eae30bdbb6f66f8 *R/NPMLEcmprsk.r
-bee37d7be698587d59a99792de350fd6 *doc/A_fast_algorithm_for_NPMLE.pdf
-a860c6bcf1647efaa487a8ff23d6b65d *doc/NPMLE_for_competing_risk_data.pdf
-a579f2463eef0b5b9afd1f72e9ce462f *doc/NPMLEcmprsk-manual.pdf
-e8d6fc5db12a34c0bf064ca7b7f47137 *man/NPMLEcmprsk.Rd
+baa6892f67c2758a7bef7924b7660967 *DESCRIPTION
+df390c53434517b304ac5db487184641 *NAMESPACE
+8e0d65c510c60aa590d350375981294f *R/improved_CompetingRisk_Code_v10.1.r
+9f20c1cde88fe52c2fd88817d647d297 *man/NPMLEcmprsk.Rd
