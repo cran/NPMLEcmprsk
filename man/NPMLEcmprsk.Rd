@@ -1,8 +1,8 @@
 \name{NPMLEcmprsk}
-\Rdversion{1.1}
+\Rdversion{2.1}
 \alias{NPMLEcmprsk}
 \docType{package}
-\title{Type-specific Failure Rate and Hazard Rate on Competing Risks Data}
+\title{Type-Specific Failure Rate and Hazard Rate on Competing Risks Data}
 \description{
              Given a failure type, the function computes covariate-specific probability of failure 
              over time and covariate-specific conditional hazard rate based on possibly right-censored
