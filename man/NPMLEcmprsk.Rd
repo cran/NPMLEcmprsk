@@ -1,5 +1,5 @@
 \name{NPMLEcmprsk}
-\Rdversion{2.1}
+\Rdversion{3.0}
 \alias{NPMLEcmprsk}
 \docType{package}
 \title{Type-Specific Failure Rate and Hazard Rate on Competing Risks Data}
@@ -54,26 +54,28 @@
          }
 \value{
        Returns a list with components
-       \item{coef.alpha}{
-                         The coefficient on the probability of type-specific failures, defined by a logistic model, and it's a (P-1)-by-(K-1)
-                         matrix, where K denote the number of failure types.
-                         }
-       \item{coef.alpha.se}{
-                            The standard error for alpha.
-                            }
-       \item{coef.alpha.95.lower.CI,coef.alpha.95.upper.CI}{
-                                                            The 95\% confidence interval for alpha.
-                                                            }
-       \item{coef.beta}{
-                        The relative risk coefficients in the hazard function for each type-specific time-to-failure and it's a (P-2)-by-K matrix.
-                        }
-       \item{coef.beta.se}{
-                           The standard error for beta.
-                           }
-       \item{coef.beta.95.lower.CI,coef.beta.95.upper.CI}{
-                                                          The 95\% confidence interval for beta.
-                                                          }
-       
+       \item{alpha}{
+                    The coefficient on the probability of type-specific failures, defined by a logistic model, and it's a (P-1)-by-(K-1)
+                    matrix, where K denote the number of failure types.
+                    }
+       \item{alpha.se,alpha.pvalue}{
+                                    The standard error and p-value for alpha respectively.
+                                    }              
+       \item{alpha.95.lower.CI,alpha.95.upper.CI}{
+                                                  The 95\% confidence interval for alpha.
+                                                  }
+       \item{beta}{
+                   The relative risk coefficients in the hazard function for each type-specific time-to-failure and it's a (P-2)-by-K matrix.
+                   }
+       \item{beta.se,beta.pvalue}{
+                                   The standard error and p-value for beta respectively.
+                                   }
+       \item{beta.95.lower.CI,beta.95.upper.CI}{
+                                                The 95\% confidence interval for beta.
+                                                }
+       \item{Lambda}{
+                     The cumulative baseline hazards.
+                     }
        We will demonstrate a simulation study in the Examples section, in which included the plot of the probability of type-specific failures.
        }
 \references{
@@ -106,7 +108,7 @@ Z<-rnorm(N,0,1)
 
 # generating the data
 W<-c((exp(cbind(1,Z) %*% alpha)/(1+exp(cbind(1,Z) %*% alpha))<runif(N))+1)
-T<--log(matrix(runif(2*N),2,N))/Lambda*exp(-t(cbind(1,Z))*beta)
+T<--log(matrix(runif(2*N),2,N))/Lambda*exp(-t(cbind(Z,Z))*beta)
 survival.time<-sapply(1:N,function(i) T[W[i],i])
 
 censoring.time<-runif(N,0.1,10)
